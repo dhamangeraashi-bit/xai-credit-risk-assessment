@@ -1,0 +1,3 @@
+protected_attribute,approval_rate_female,approval_rate_male,demographic_parity_diff,disparate_impact_ratio,equal_opportunity_diff,approval_rate_under25,approval_rate_25plus
+Sex proxy (female vs. male),0.831,0.873,-0.042,0.95,0.007,,
+Age group (<25 vs. >=25),,,0.022,0.98,0.008,0.879,0.857

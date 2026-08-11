@@ -1,0 +1,12 @@
+# Tested and verified with these exact versions (see docs/REPRODUCIBILITY.md).
+# Newer minor versions will generally also work; if you hit an incompatibility,
+# pin to the versions below.
+
+pandas==3.0.2
+numpy==2.4.4
+scipy==1.17.1
+scikit-learn==1.8.0
+xgboost==3.4.0
+shap==0.52.0
+lime==0.2.0.1
+matplotlib==3.10.8

@@ -1,0 +1,3 @@
+subgroup,bureau_only_auc,bureau_plus_altdata_auc,auc_gain
+"Thin-file (no checking a/c), n=93",0.632,0.794,0.161
+"Banked (has checking a/c), n=157",0.749,0.768,0.019

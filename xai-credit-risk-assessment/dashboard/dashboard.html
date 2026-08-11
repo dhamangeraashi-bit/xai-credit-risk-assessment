@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Explainable Credit-Risk Dashboard (Prototype)</title>
+<style>
+  :root {
+    --approve: #2ca02c; --reject: #d62728; --neutral: #555;
+    --bg: #f4f6f8; --panel: #ffffff; --border: #dde3e8;
+  }
+  * { box-sizing: border-box; font-family: "Segoe UI", Arial, sans-serif; }
+  body { margin: 0; background: var(--bg); color: #222; }
+  header { background: #14324f; color: white; padding: 14px 24px; }
+  header h1 { margin: 0; font-size: 20px; }
+  header p { margin: 2px 0 0; font-size: 12.5px; color: #cbd8e6; }
+  .layout { display: grid; grid-template-columns: 1fr 1.3fr 1fr; gap: 14px; padding: 16px; }
+  .panel { background: var(--panel); border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; }
+  .panel h2 { font-size: 14px; margin: 0 0 10px; border-bottom: 1px solid var(--border); padding-bottom: 6px; }
+  select { width: 100%; padding: 6px; margin-bottom: 12px; border-radius: 6px; border: 1px solid var(--border); }
+  .field { display: flex; justify-content: space-between; font-size: 13px; padding: 3px 0; border-bottom: 1px dashed #eee; }
+  .thinfile-flag { background: #fff3cd; border: 1px solid #ffe08a; color: #7a5b00; padding: 6px 8px; border-radius: 6px; font-size: 12px; margin-top: 8px; }
+  .proba-box { text-align: center; margin: 10px 0 16px; }
+  .proba-box .value { font-size: 34px; font-weight: 700; color: var(--approve); }
+  .bar-row { display: flex; align-items: center; gap: 8px; font-size: 12.5px; margin: 4px 0; }
+  .bar-row .label { width: 150px; text-align: right; color: #333; }
+  .bar-track { flex: 1; background: #eee; border-radius: 4px; height: 14px; position: relative; overflow: hidden; }
+  .bar-fill { height: 100%; }
+  .fair-metric { font-size: 13px; margin: 6px 0; }
+  .fair-metric b { display: block; font-size: 20px; }
+  .ok { color: var(--approve); } .warn { color: #b8860b; } .bad { color: var(--reject); }
+  .checklist { list-style: none; padding: 0; margin: 10px 0; font-size: 12.5px; }
+  .checklist li { padding: 3px 0; }
+  .checklist li::before { content: "\2713  "; color: var(--approve); font-weight: bold; }
+  .actions { display: flex; gap: 10px; margin-top: 14px; }
+  .actions button { flex: 1; padding: 10px; border: none; border-radius: 8px; font-size: 14px; cursor: pointer; color: white; }
+  .approve-btn { background: var(--approve); } .reject-btn { background: var(--reject); }
+  footer { text-align: center; font-size: 11px; color: #888; padding: 10px; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Explainable Credit-Scoring Dashboard &mdash; Loan Officer View (Prototype)</h1>
+  <p>Fig. 9 reproduction &middot; Sections IV&ndash;VII &middot; illustrative sample applicants only, no live data connection</p>
+</header>
+
+<div class="layout">
+
+  <!-- APPLICANT PANEL -->
+  <div class="panel" id="applicantPanel">
+    <h2>Applicant</h2>
+    <select id="applicantSelect" onchange="renderApplicant()"></select>
+    <div id="applicantFields"></div>
+    <div id="thinFileFlag"></div>
+  </div>
+
+  <!-- MODEL RISK ASSESSMENT PANEL -->
+  <div class="panel">
+    <h2>Model Risk Assessment</h2>
+    <div class="proba-box">
+      <div class="value" id="probaValue">--%</div>
+      <div style="font-size:12px;color:#666;">Predicted probability of GOOD credit risk (XGBoost)</div>
+    </div>
+    <div id="shapBars"></div>
+  </div>
+
+  <!-- FAIRNESS & COMPLIANCE PANEL -->
+  <div class="panel">
+    <h2>Fairness &amp; Compliance</h2>
+    <div class="fair-metric">Disparate Impact Ratio (subgroup)
+      <b id="dirValue">--</b>
+    </div>
+    <div class="fair-metric">Equal Opportunity Gap (subgroup)
+      <b id="eodValue">--</b>
+    </div>
+    <ul class="checklist">
+      <li>RBI Digital Lending Directions 2025 &ndash; reason codes generated</li>
+      <li>EU AI Act high-risk system &ndash; explanation logged</li>
+      <li>Disparate-impact audit trail recorded</li>
+      <li>SHAP explanation attached to decision record</li>
+    </ul>
+    <div class="actions">
+      <button class="approve-btn" onclick="alert('Prototype only: no backend connected.')">Approve</button>
+      <button class="reject-btn" onclick="alert('Prototype only: no backend connected.')">Reject</button>
+    </div>
+  </div>
+
+</div>
+
+<footer>Prototype for illustration only &middot; not connected to a live loan-origination system &middot; see Section VIII (Limitations)</footer>
+
+<script>
+// Illustrative sample applicants (including one thin-file case), consistent
+// with the feature set and SHAP direction used throughout the pipeline.
+var applicants = [
+  {
+    name: "Applicant #1 (Banked, low risk)",
+    thinFile: false,
+    fields: { "Age": 34, "Checking a/c status": "0-200 DM", "Credit amount (DM)": 2200,
+              "Duration (months)": 12, "Purpose": "Radio/TV", "Employment since": "4-7 yrs" },
+    proba: 0.87,
+    shap: [ ["Checking account status", 0.22], ["Credit history", 0.14], ["Savings account", 0.09],
+            ["Duration", -0.05], ["Loan purpose", 0.04], ["Employment since", 0.03] ],
+    subgroup: "Male, 25+",
+    dir: 0.98, eod: 0.008
+  },
+  {
+    name: "Applicant #2 (Thin-file, moderate risk)",
+    thinFile: true,
+    fields: { "Age": 22, "Checking a/c status": "No checking account", "Credit amount (DM)": 3800,
+              "Duration (months)": 24, "Purpose": "Business", "Mobile recharge regularity": "0.74",
+              "Utility payment punctuality": "0.68", "Digital txn consistency": "0.71" },
+    proba: 0.656,
+    shap: [ ["Checking account status", -0.31], ["Credit amount", -0.12], ["Duration", -0.08],
+            ["Alt-data: utility punctuality", 0.19], ["Alt-data: mobile regularity", 0.15],
+            ["Savings account", -0.04] ],
+    subgroup: "Female, <25",
+    dir: 0.90, eod: -0.054
+  },
+  {
+    name: "Applicant #3 (Banked, higher risk)",
+    thinFile: false,
+    fields: { "Age": 45, "Checking a/c status": "< 0 DM", "Credit amount (DM)": 6500,
+              "Duration (months)": 36, "Purpose": "New car", "Employment since": "1-4 yrs" },
+    proba: 0.41,
+    shap: [ ["Checking account status", -0.28], ["Credit amount", -0.19], ["Duration", -0.11],
+            ["Existing credits", -0.06], ["Property", 0.05], ["Job", 0.02] ],
+    subgroup: "Male, 25+",
+    dir: 0.95, eod: 0.007
+  }
+];
+
+function populateSelect() {
+  var sel = document.getElementById('applicantSelect');
+  for (var i = 0; i < applicants.length; i++) {
+    var opt = document.createElement('option');
+    opt.value = i; opt.textContent = applicants[i].name;
+    sel.appendChild(opt);
+  }
+}
+
+function renderApplicant() {
+  var idx = document.getElementById('applicantSelect').value || 0;
+  var a = applicants[idx];
+
+  var fieldsDiv = document.getElementById('applicantFields');
+  fieldsDiv.innerHTML = '';
+  var keys = Object.keys(a.fields);
+  for (var i = 0; i < keys.length; i++) {
+    var k = keys[i], v = a.fields[k];
+    var row = document.createElement('div');
+    row.className = 'field';
+    row.innerHTML = '<span>' + k + '</span><span>' + v + '</span>';
+    fieldsDiv.appendChild(row);
+  }
+
+  document.getElementById('thinFileFlag').innerHTML = a.thinFile
+    ? '<div class="thinfile-flag">&#9888; Thin-file applicant: alternative-data features (mobile recharge, utility payments, digital transactions) were used for this prediction.</div>'
+    : '';
+
+  document.getElementById('probaValue').textContent = Math.round(a.proba * 100) + '%';
+  document.getElementById('probaValue').style.color = a.proba >= 0.5 ? '#2ca02c' : '#d62728';
+
+  var shapDiv = document.getElementById('shapBars');
+  shapDiv.innerHTML = '';
+  var maxAbs = 0;
+  for (var i = 0; i < a.shap.length; i++) { maxAbs = Math.max(maxAbs, Math.abs(a.shap[i][1])); }
+  for (var i = 0; i < a.shap.length; i++) {
+    var label = a.shap[i][0], val = a.shap[i][1];
+    var row = document.createElement('div');
+    row.className = 'bar-row';
+    var pct = Math.abs(val) / maxAbs * 100;
+    var color = val >= 0 ? '#2ca02c' : '#d62728';
+    var marginLeft = val >= 0 ? 0 : (100 - pct);
+    row.innerHTML = '<div class="label">' + label + '</div>' +
+      '<div class="bar-track"><div class="bar-fill" style="width:' + pct + '%;background:' + color + ';margin-left:' + marginLeft + '%;"></div></div>' +
+      '<div style="width:44px;font-size:11px;text-align:right;">' + (val >= 0 ? '+' : '') + val.toFixed(2) + '</div>';
+    shapDiv.appendChild(row);
+  }
+
+  document.getElementById('dirValue').textContent = a.dir.toFixed(2);
+  document.getElementById('dirValue').className = a.dir >= 0.8 ? 'ok' : 'bad';
+  document.getElementById('eodValue').textContent = (a.eod >= 0 ? '+' : '') + a.eod.toFixed(3);
+  document.getElementById('eodValue').className = Math.abs(a.eod) <= 0.02 ? 'ok' : 'warn';
+}
+
+populateSelect();
+renderApplicant();
+</script>
+
+</body>
+</html>
