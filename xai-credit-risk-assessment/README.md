@@ -1,6 +1,6 @@
 # Towards Transparent Credit Risk Assessment: An Explainable AI Framework for Financially Excluded Borrowers
 
-**Reproducible code companion to the IEEE-style manuscript of the same name.**
+
 Authors: Raashi Dhamange, Shristi Dhamange, Chaitalee Mali (AISSMS Institute of Information Technology, Pune, India)
 
 This repository contains the complete, runnable pipeline used to produce every
