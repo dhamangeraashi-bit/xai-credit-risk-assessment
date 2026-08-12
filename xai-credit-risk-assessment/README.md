@@ -83,7 +83,7 @@ and VS Code specifically), see [`docs/REPRODUCIBILITY.md`](docs/REPRODUCIBILITY.
 
 ---
 
-## 4. Honesty about numbers
+## 4. Reproducibility Notes
 
 Re-running this pipeline reproduces the paper's qualitative conclusions
 faithfully and its quantitative results closely (most metrics within 1-2
