@@ -1,9 +1,4 @@
-# Optional Extensions
 
-These are **not** part of the paper's current claims and would change or add
-to the scientific content if included. They are listed here, separately, as
-suggested follow-up work only — nothing in the core reproduction package
-depends on any of these.
 
 ## 1. Multi-seed stability analysis
 Re-run `scripts/run_all.py` across 10-20 random seeds and report mean ±
