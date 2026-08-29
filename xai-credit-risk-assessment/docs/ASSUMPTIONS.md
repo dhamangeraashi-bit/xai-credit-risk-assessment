@@ -1,12 +1,5 @@
 # Assumptions Made During Reproduction
 
-The paper (correctly, for an 8-10 page IEEE-style manuscript) does not publish
-every implementation detail needed to reproduce its numbers to the last
-decimal place. This document lists every place this codebase had to fill a
-gap, what we assumed, why, and how confident the resulting reproduction is.
-Nothing below was used to alter or invent a result — every number reported
-in this project's `outputs/` is a real, measured output of real code.
-
 ---
 
 ## A1. Random seed
