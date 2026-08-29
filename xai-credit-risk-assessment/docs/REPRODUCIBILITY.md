@@ -1,9 +1,5 @@
 # Reproducibility Guide — Step by Step
 
-This guide assumes zero prior setup. Pick the path that matches where you
-want to work: VS Code (local machine), Google Colab (no local install), or
-"I just want to push this to GitHub."
-
 ---
 
 ## Path A — VS Code (local machine, Windows/Mac/Linux)
